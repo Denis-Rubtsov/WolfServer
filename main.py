@@ -1,7 +1,10 @@
 import os
+import ssl
 from http.server import HTTPServer, BaseHTTPRequestHandler
 VOICE_FOLDER = "/data/voice"
 PORT = int(os.getenv("PORT", 8080))
+CERT_FILE = os.getenv("SSL_CERT", "cert.pem")
+KEY_FILE = os.getenv("SSL_KEY", "key.pem")
 class HealthHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
@@ -23,7 +26,6 @@ class HealthHandler(BaseHTTPRequestHandler):
                     self.wfile.write(b"File not found")
                     return
 
-            # healthcheck
             if self.path == "/":
                 self.send_response(200)
                 self.end_headers()
@@ -44,7 +46,13 @@ class HealthHandler(BaseHTTPRequestHandler):
 def run_http_server():
     try:
         server = HTTPServer(("0.0.0.0", PORT), HealthHandler)  # type: ignore
-        print(f"HTTP server listening on port {PORT}")
+
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_cert_chain(certfile=CERT_FILE, keyfile=KEY_FILE)
+
+        server.socket = context.wrap_socket(server.socket, server_side=True)
+
+        print(f"HTTPS server listening on port {PORT}")
         server.serve_forever()
     except Exception as e:
         print("Ошибка при запуске HTTP сервера:", e)
