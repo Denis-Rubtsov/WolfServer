@@ -27,7 +27,7 @@ class HealthHandler(BaseHTTPRequestHandler):
             if self.path == "/":
                 self.send_response(200)
                 self.end_headers()
-                self.wfile.write(b"Bot is running!")
+                self.wfile.write(b"Server's running")
                 return
 
             # всё остальное
@@ -51,4 +51,3 @@ def run_http_server():
 
 if __name__ == '__main__':
     run_http_server()
-    #threading.Thread(target=run_http_server).start()
